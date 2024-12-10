@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "461622545016",
+    "firebase_url": "https://mobilesystemeprak-8e3e1-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "mobilesystemeprak-8e3e1",
+    "storage_bucket": "mobilesystemeprak-8e3e1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:461622545016:android:ced2f4021466b1a2fbbb8d",
+        "android_client_info": {
+          "package_name": "com.example.mobsyspr2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC60i5Rh6GutZWs3KW7ixX_U55NloPpNXI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
