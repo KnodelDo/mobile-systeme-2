@@ -112,10 +112,8 @@ class AdminBoard : AppCompatActivity() {
                         historyRef.child(newIndex.toString()).setValue(newEntry)
                             .addOnSuccessListener {
                                 Log.d("AdminBoard", "updateHistory: Neuer Eintrag hinzugefügt: reads=$reads, writes=$writes")
-
-                                // Überprüfen, ob mehr als 10 Einträge vorhanden sind
                                 historyRef.get().addOnSuccessListener { snapshot ->
-                                    if (snapshot.childrenCount > 10) { // Anzahl der Einträge ermitteln
+                                    if (snapshot.childrenCount > 10) {
                                         val oldestEntryKey = snapshot.children.firstOrNull()?.key
                                         oldestEntryKey?.let { key ->
                                             historyRef.child(key).removeValue()

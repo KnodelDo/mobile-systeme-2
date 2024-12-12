@@ -69,7 +69,7 @@ class HomeActivity : AppCompatActivity() {
         database.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
-                    AdminBoard.incrementReadCount() // Lesevorgang zählen, wenn Daten vorhanden sind
+                    AdminBoard.incrementReadCount()
                     itemsList.clear()
                     for (itemSnapshot in snapshot.children) {
                         val item = itemSnapshot.getValue(Item::class.java)
@@ -98,7 +98,7 @@ class HomeActivity : AppCompatActivity() {
         database.child(newItemId)
             .setValue(newItem)
             .addOnSuccessListener {
-                AdminBoard.incrementWriteCount() // Schreibvorgang zählen
+                AdminBoard.incrementWriteCount()
                 toast("Eintrag erfolgreich hinzugefügt")
             }
             .addOnFailureListener { e ->
