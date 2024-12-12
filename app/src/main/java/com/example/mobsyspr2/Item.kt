@@ -4,17 +4,17 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class Item(
-    val id: String = "",          // Standardwert für null
-    val produkt: String = "Unbekannt", // Standardwert für null
+    val id: String = "",
+    val produkt: String = "Unbekannt",
     val menge: Int = 0,
-    val notizen: String = "Keine Notizen" // Standardwert für null
+    val notizen: String = "Keine Notizen"
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
-        parcel.readString() ?: "",  // Standardwert für null
-        parcel.readString() ?: "Unbekannt",  // Standardwert für null
+        parcel.readString() ?: "",
+        parcel.readString() ?: "Unbekannt",
         parcel.readInt(),
-        parcel.readString() ?: "Keine Notizen"  // Standardwert für null
+        parcel.readString() ?: "Keine Notizen"
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

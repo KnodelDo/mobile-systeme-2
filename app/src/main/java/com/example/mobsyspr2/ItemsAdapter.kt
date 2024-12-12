@@ -12,7 +12,7 @@ import com.google.firebase.database.FirebaseDatabase
 
 class ItemsAdapter(
     private val itemsList: MutableList<Item>,
-    private val onItemDeleted: (Boolean) -> Unit // Callback für Erfolg/Fehlschlag des Löschens
+    private val onItemDeleted: (Boolean) -> Unit
 ) : RecyclerView.Adapter<ItemsAdapter.ItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -23,18 +23,18 @@ class ItemsAdapter(
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val item = itemsList[position]
 
-        // Sicherstellen, dass alle Felder korrekt gesetzt sind
+
         holder.tvProdukt.text = item.produkt ?: "Unbekannt"
         holder.tvMenge.text = item.menge.toString()
         holder.tvNotiz.text = item.notizen ?: "Keine Notizen"
 
-        // Löschen-Button
+
         holder.btnDelete.setOnClickListener {
             val itemId = item.id
-            if (itemId != null && position in itemsList.indices) { // Prüfen, ob Position gültig ist
+            if (itemId != null && position in itemsList.indices) {
                 deleteItemFromFirebase(itemId) { success ->
                     if (success) {
-                        if (position in itemsList.indices) { // Erneut prüfen, ob Position noch gültig ist
+                        if (position in itemsList.indices) {
                             itemsList.removeAt(position)
                             notifyItemRemoved(position)
                             notifyItemRangeChanged(position, itemsList.size)

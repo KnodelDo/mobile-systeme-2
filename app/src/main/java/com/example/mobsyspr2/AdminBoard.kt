@@ -54,7 +54,7 @@ class AdminBoard : AppCompatActivity() {
                         val newReads = currentData?.getValue(Int::class.java) ?: 0
                         statsRef.child("total_writes").get().addOnSuccessListener { snapshot ->
                             val currentWrites = snapshot.getValue(Int::class.java) ?: 0
-                            updateHistory(reads = newReads, writes = currentWrites) // Beide Werte als Int übergeben
+                            updateHistory(reads = newReads, writes = currentWrites)
                         }
                     } else {
                         Log.e("AdminBoard", "Fehler beim Aktualisieren der Leseanfragen: ${error?.message}")
