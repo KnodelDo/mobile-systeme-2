@@ -60,7 +60,7 @@ class ItemsAdapter(
             .child(itemId)
             .removeValue()
             .addOnSuccessListener {
-                AdminBoard.incrementWriteCount()
+                AdminBoard.incrementCounters(isRead = false) // Schreibzähler erhöhen
                 Log.d("ItemsAdapter", "Item mit ID $itemId erfolgreich gelöscht.")
                 callback(true) // Erfolgreich gelöscht
             }
@@ -69,7 +69,7 @@ class ItemsAdapter(
                 callback(false) // Fehler beim Löschen
             }
     }
-    // ViewHolder für die RecyclerView
+
     class ItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvProdukt: TextView = itemView.findViewById(R.id.tvProdukt)
         val tvMenge: TextView = itemView.findViewById(R.id.tvMenge)

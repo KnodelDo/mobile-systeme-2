@@ -20,6 +20,8 @@ class AdminBoard : AppCompatActivity() {
     private val writeHistory = mutableListOf<Entry>()
     private lateinit var binding: ActivityAdminBoardBinding
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminBoardBinding.inflate(layoutInflater)
@@ -37,11 +39,12 @@ class AdminBoard : AppCompatActivity() {
 
     companion object {
         private val statsRef = FirebaseDatabase.getInstance().getReference("Stats")
+
         fun incrementReadCount() {
             statsRef.child("total_reads").runTransaction(object : Transaction.Handler {
                 override fun doTransaction(currentData: MutableData): Transaction.Result {
-                    val currentValue = currentData.getValue(Long::class.java) ?: 0L
-                    currentData.value = (currentValue + 1).toInt()
+                    val currentValue = currentData.getValue(Int::class.java) ?: 0
+                    currentData.value = currentValue + 1
                     return Transaction.success(currentData)
                 }
 
@@ -51,11 +54,7 @@ class AdminBoard : AppCompatActivity() {
                     currentData: DataSnapshot?
                 ) {
                     if (error == null && committed) {
-                        val newReads = currentData?.getValue(Int::class.java) ?: 0
-                        statsRef.child("total_writes").get().addOnSuccessListener { snapshot ->
-                            val currentWrites = snapshot.getValue(Int::class.java) ?: 0
-                            updateHistory(reads = newReads, writes = currentWrites)
-                        }
+                        fetchLatestStatsAndUpdateHistory()
                     } else {
                         Log.e("AdminBoard", "Fehler beim Aktualisieren der Leseanfragen: ${error?.message}")
                     }
@@ -77,21 +76,59 @@ class AdminBoard : AppCompatActivity() {
                     currentData: DataSnapshot?
                 ) {
                     if (error == null && committed) {
-                        val newWrites = currentData?.getValue(Int::class.java) ?: 0
-                        statsRef.child("total_reads").get().addOnSuccessListener { snapshot ->
-                            val currentReads = snapshot.getValue(Int::class.java) ?: 0
-                            updateHistory(reads = currentReads, writes = newWrites)
-                        }
+                        fetchLatestStatsAndUpdateHistory()
                     } else {
                         Log.e("AdminBoard", "Fehler beim Aktualisieren der Schreibanfragen: ${error?.message}")
                     }
                 }
             })
         }
+        private fun fetchLatestStatsAndUpdateHistory() {
+            statsRef.get().addOnSuccessListener { snapshot ->
+                val currentReads = snapshot.child("total_reads").getValue(Int::class.java) ?: 0
+                val currentWrites = snapshot.child("total_writes").getValue(Int::class.java) ?: 0
+
+                updateHistory(currentReads, currentWrites)
+            }.addOnFailureListener { e ->
+                Log.e("AdminBoard", "Fehler beim Abrufen der aktuellen Stats: ${e.message}")
+            }
+        }
 
 
 
-        private var isUpdatingHistory = false
+        fun incrementCounters(isRead: Boolean) {
+            statsRef.runTransaction(object : Transaction.Handler {
+                override fun doTransaction(currentData: MutableData): Transaction.Result {
+                    val totalReads = currentData.child("total_reads").getValue(Int::class.java) ?: 0
+                    val totalWrites = currentData.child("total_writes").getValue(Int::class.java) ?: 0
+
+                    if (isRead) {
+                        currentData.child("total_reads").value = totalReads + 1
+                    } else {
+                        currentData.child("total_writes").value = totalWrites + 1
+                    }
+
+                    return Transaction.success(currentData)
+                }
+
+                override fun onComplete(
+                    error: DatabaseError?,
+                    committed: Boolean,
+                    currentData: DataSnapshot?
+                ) {
+                    if (error == null && committed) {
+                        val updatedReads = currentData?.child("total_reads")?.getValue(Int::class.java)
+                            ?: 0
+                        val updatedWrites = currentData?.child("total_writes")?.getValue(Int::class.java)
+                            ?: 0
+                        updateHistory(updatedReads, updatedWrites)
+                    } else {
+                        Log.e("AdminBoard", "Fehler beim Aktualisieren der Zähler: ${error?.message}")
+                    }
+                }
+            })
+        }
+
 
         private fun updateHistory(reads: Int, writes: Int) {
             val historyRef = statsRef.child("History")
@@ -107,45 +144,62 @@ class AdminBoard : AppCompatActivity() {
                 override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
                     if (error == null && committed) {
                         val newIndex = currentData?.getValue(Int::class.java) ?: 0
-                        val newEntry = mapOf("reads" to reads, "writes" to writes)
+                        val newEntry = mapOf(
+                            "reads" to reads,
+                            "writes" to writes
+                        )
 
                         historyRef.child(newIndex.toString()).setValue(newEntry)
                             .addOnSuccessListener {
-                                Log.d("AdminBoard", "updateHistory: Neuer Eintrag hinzugefügt: reads=$reads, writes=$writes")
-                                historyRef.get().addOnSuccessListener { snapshot ->
-                                    if (snapshot.childrenCount > 10) {
-                                        val oldestEntryKey = snapshot.children.firstOrNull()?.key
-                                        oldestEntryKey?.let { key ->
-                                            historyRef.child(key).removeValue()
-                                                .addOnSuccessListener {
-                                                    Log.d("AdminBoard", "Ältester Eintrag erfolgreich entfernt.")
-                                                }
-                                                .addOnFailureListener { e ->
-                                                    Log.e("AdminBoard", "Fehler beim Entfernen des ältesten Eintrags: ${e.message}")
-                                                }
-                                        }
-                                    }
-                                }.addOnFailureListener { e ->
-                                    Log.e("AdminBoard", "Fehler beim Abrufen der Historie: ${e.message}")
-                                }
+                                Log.d("AdminBoard", "Neuer Eintrag hinzugefügt: reads=$reads, writes=$writes")
+                                cleanupHistory()
                             }
                             .addOnFailureListener { e ->
-                                Log.e("AdminBoard", "Fehler beim Hinzufügen des neuen Eintrags: ${e.message}")
+                                Log.e("AdminBoard", "Fehler beim Hinzufügen des Eintrags: ${e.message}")
                             }
-
                     } else {
-                        Log.e("AdminBoard", "Fehler beim Aktualisieren des Index: ${error?.message}")
+                        Log.e("AdminBoard", "Fehler beim Aktualisieren der Historie: ${error?.message}")
                     }
                 }
             })
         }
 
 
+        private fun cleanupHistory() {
+            val historyRef = statsRef.child("History")
 
+            historyRef.get().addOnSuccessListener { snapshot ->
+                val entries = snapshot.children.toList()
 
+                // Prüfen, ob die Anzahl der Einträge größer als 10 ist
+                if (entries.size > 10) {
+                    val oldestEntries =
+                        entries.take(entries.size - 10) // Älteste Einträge auswählen
+
+                    // Älteste Einträge löschen
+                    for (entry in oldestEntries) {
+                        entry.ref.removeValue()
+                            .addOnSuccessListener {
+                                Log.d(
+                                    "AdminBoard",
+                                    "Ältester Eintrag erfolgreich entfernt: ${entry.key}"
+                                )
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e(
+                                    "AdminBoard",
+                                    "Fehler beim Löschen eines Eintrags: ${e.message}"
+                                )
+                            }
+                    }
+                }
+            }.addOnFailureListener { e ->
+                Log.e("AdminBoard", "Fehler beim Abrufen der Historie: ${e.message}")
+            }
+        }
     }
 
-    private fun configureLineChart(chart: LineChart, label: String) {
+        private fun configureLineChart(chart: LineChart, label: String) {
         chart.description.isEnabled = true
         chart.description.text = label
         chart.setTouchEnabled(true)
