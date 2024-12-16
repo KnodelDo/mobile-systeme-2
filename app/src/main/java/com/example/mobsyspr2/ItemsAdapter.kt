@@ -6,13 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.FirebaseDatabase
 
 class ItemsAdapter(
     private val itemsList: MutableList<Item>,
-    private val onItemDeleted: (Boolean) -> Unit
 ) : RecyclerView.Adapter<ItemsAdapter.ItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -60,13 +58,13 @@ class ItemsAdapter(
             .child(itemId)
             .removeValue()
             .addOnSuccessListener {
-                AdminBoard.incrementCounters(isRead = false) // Schreibzähler erhöhen
+                AdminBoard.incrementCounters(isRead = false)
                 Log.d("ItemsAdapter", "Item mit ID $itemId erfolgreich gelöscht.")
-                callback(true) // Erfolgreich gelöscht
+                callback(true)
             }
             .addOnFailureListener { e ->
                 Log.e("ItemsAdapter", "Fehler beim Löschen des Items: ${e.message}")
-                callback(false) // Fehler beim Löschen
+                callback(false)
             }
     }
 

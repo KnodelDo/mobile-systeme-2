@@ -171,12 +171,10 @@ class AdminBoard : AppCompatActivity() {
             historyRef.get().addOnSuccessListener { snapshot ->
                 val entries = snapshot.children.toList()
 
-                // Prüfen, ob die Anzahl der Einträge größer als 10 ist
                 if (entries.size > 10) {
                     val oldestEntries =
-                        entries.take(entries.size - 10) // Älteste Einträge auswählen
+                        entries.take(entries.size - 10)
 
-                    // Älteste Einträge löschen
                     for (entry in oldestEntries) {
                         entry.ref.removeValue()
                             .addOnSuccessListener {
