@@ -30,7 +30,7 @@ jobs:
 
     - name: Deploy to Firebase
       env:
-        FIREBASE_TOKEN: 1//03y6TbUTJNxxnCgYIARAAGAMSNwF
+        FIREBASE_TOKEN: 1//03y6TbUTJNxxnCgYIARAAGAMSNwF-L9IrapVjOfDlNv40K5w0JfaR97owBw-ruRI_ShasfHfpbXXuL9UsEjtBfUczd65V7DdWOzA
       run: |
         npm install -g firebase-tools
         firebase deploy --only hosting
