@@ -40,62 +40,6 @@ class AdminBoard : AppCompatActivity() {
     companion object {
         private val statsRef = FirebaseDatabase.getInstance().getReference("Stats")
 
-        fun incrementReadCount() {
-            statsRef.child("total_reads").runTransaction(object : Transaction.Handler {
-                override fun doTransaction(currentData: MutableData): Transaction.Result {
-                    val currentValue = currentData.getValue(Int::class.java) ?: 0
-                    currentData.value = currentValue + 1
-                    return Transaction.success(currentData)
-                }
-
-                override fun onComplete(
-                    error: DatabaseError?,
-                    committed: Boolean,
-                    currentData: DataSnapshot?
-                ) {
-                    if (error == null && committed) {
-                        fetchLatestStatsAndUpdateHistory()
-                    } else {
-                        Log.e("AdminBoard", "Fehler beim Aktualisieren der Leseanfragen: ${error?.message}")
-                    }
-                }
-            })
-        }
-
-        fun incrementWriteCount() {
-            statsRef.child("total_writes").runTransaction(object : Transaction.Handler {
-                override fun doTransaction(currentData: MutableData): Transaction.Result {
-                    val currentValue = currentData.getValue(Int::class.java) ?: 0
-                    currentData.value = currentValue + 1
-                    return Transaction.success(currentData)
-                }
-
-                override fun onComplete(
-                    error: DatabaseError?,
-                    committed: Boolean,
-                    currentData: DataSnapshot?
-                ) {
-                    if (error == null && committed) {
-                        fetchLatestStatsAndUpdateHistory()
-                    } else {
-                        Log.e("AdminBoard", "Fehler beim Aktualisieren der Schreibanfragen: ${error?.message}")
-                    }
-                }
-            })
-        }
-        private fun fetchLatestStatsAndUpdateHistory() {
-            statsRef.get().addOnSuccessListener { snapshot ->
-                val currentReads = snapshot.child("total_reads").getValue(Int::class.java) ?: 0
-                val currentWrites = snapshot.child("total_writes").getValue(Int::class.java) ?: 0
-
-                updateHistory(currentReads, currentWrites)
-            }.addOnFailureListener { e ->
-                Log.e("AdminBoard", "Fehler beim Abrufen der aktuellen Stats: ${e.message}")
-            }
-        }
-
-
-
         fun incrementCounters(isRead: Boolean) {
             statsRef.runTransaction(object : Transaction.Handler {
                 override fun doTransaction(currentData: MutableData): Transaction.Result {
