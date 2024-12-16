@@ -1,0 +1,29 @@
+{
+  "name": "mobile-systeme-2",
+  "version": "1.0.0",
+  "description": "mobile-systeme-2",
+  "main": "MainActivity.kt",
+  "scripts": {
+    "test": "jest",
+    "build": "echo 'No build step defined'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KnodelDo/mobile-systeme-2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KnodelDo/mobile-systeme-2/issues"
+  },
+  "homepage": "https://github.com/KnodelDo/mobile-systeme-2#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "jest": {
+    "testMatch": [
+      "**/app/src/test/**/*.[jt]s?(x)",
+      "**/?(*.)+(spec|test).[tj]s?(x)"
+    ]
+  }
+}
